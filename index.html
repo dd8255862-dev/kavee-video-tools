@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavee Video Tools</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0c0b14;color:white;font-family:Arial,sans-serif}
+header{text-align:center;padding:28px 15px;background:linear-gradient(135deg,#28134a,#7027a5)}
+h1{color:#ead3ff;margin:0}
+main{max-width:800px;margin:auto;padding:16px}
+.card{background:#1a1726;border:1px solid #403052;border-radius:15px;padding:18px;margin:15px 0}
+input,button{padding:12px;border-radius:8px;font-size:15px;max-width:100%}
+button{background:#a65bea;color:white;border:0;margin:8px 5px 8px 0}
+video{width:100%;max-height:320px;background:#050505;margin-top:15px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tool{padding:14px;background:#292039;border-radius:10px}
+small{color:#cfc2df}
+#status{color:#d9b6ff;overflow-wrap:anywhere}
+@media(max-width:450px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>🎬 Kavee Video Tools</h1>
+<p>Free tools for video creators</p>
+</header>
+<main>
+<section class="card">
+<h2>🎥 Video Preview</h2>
+<input id="file" type="file" accept="video/*">
+<video id="video" controls playsinline></video>
+<p id="info">Select a video from your phone.</p>
+<p id="status">Your video stays on your device.</p>
+</section>
+<section class="card">
+<h2>🖼️ Thumbnail Maker</h2>
+<p>Pause the video at the frame you want.</p>
+<button id="capture">Capture Thumbnail</button>
+<div><img id="thumb" alt="Thumbnail preview" style="display:none;width:100%;margin-top:12px"></div>
+<button id="download" disabled>Download JPG</button>
+<canvas id="canvas" hidden></canvas>
+</section>
+<section class="card">
+<h2>📱 Video Size Guide</h2>
+<div class="grid">
+<div class="tool"><b>YouTube Video</b><p>16:9</p><small>1920 × 1080</small></div>
+<div class="tool"><b>YouTube Shorts</b><p>9:16</p><small>1080 × 1920</small></div>
+<div class="tool"><b>Square Video</b><p>1:1</p><small>1080 × 1080</small></div>
+<div class="tool"><b>HD Video</b><p>16:9</p><small>1280 × 720</small></div>
+</div>
+</section>
+</main>
+<footer style="text-align:center;padding:20px;color:#cfc2df">Kavee Video Tools © 2026</footer>
+<script>
+const file=document.getElementById('file');
+const video=document.getElementById('video');
+const info=document.getElementById('info');
+const status=document.getElementById('status');
+const canvas=document.getElementById('canvas');
+const thumb=document.getElementById('thumb');
+const download=document.getElementById('download');
+let videoURL=null,imageURL=null;
+file.addEventListener('change',()=>{
+ const f=file.files[0];if(!f)return;
+ if(videoURL)URL.revokeObjectURL(videoURL);
+ videoURL=URL.createObjectURL(f);video.src=videoURL;
+ info.textContent='File: '+f.name+' | Size: '+(f.size/1048576).toFixed(2)+' MB';
+ status.textContent='Loading video...';
+});
+video.addEventListener('loadedmetadata',()=>{
+ info.textContent+=' | Duration: '+Math.floor(video.duration)+' seconds | Resolution: '+video.videoWidth+' × '+video.videoHeight;
+ status.textContent='Video ready! Pause at a frame to capture it.';
+});
+document.getElementById('capture').addEventListener('click',()=>{
+ if(!video.videoWidth||video.readyState<2){status.textContent='Choose a video and wait for it to load.';return;}
+ canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+ canvas.getContext('2d').drawImage(video,0,0);
+ canvas.toBlob(blob=>{
+  if(!blob){status.textContent='Could not create image.';return;}
+  if(imageURL)URL.revokeObjectURL(imageURL);
+  imageURL=URL.createObjectURL(blob);thumb.src=imageURL;
+  thumb.style.display='block';download.disabled=false;
+  status.textContent='Thumbnail ready!';
+ },'image/jpeg',0.92);
+});
+download.addEventListener('click',()=>{
+ if(!imageURL)return;
+ const a=document.createElement('a');a.href=imageURL;
+ a.download='kavee-thumbnail.jpg';a.click();
+});
+</script>
+</body>
+</html>
